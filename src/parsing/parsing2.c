@@ -6,11 +6,23 @@
 /*   By: fracurul <fracurul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/26 18:54:14 by fracurul          #+#    #+#             */
-/*   Updated: 2025/06/04 17:37:05 by fracurul         ###   ########.fr       */
+/*   Updated: 2026/01/04 11:07:49 by fracurul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+static void	skip_quoted_section(const char *s, int *i)
+{
+	char	quote;
+
+	quote = s[*i];
+	(*i)++;
+	while (s[*i] && s[*i] != quote)
+		(*i)++;
+	if (s[*i] == quote)
+		(*i)++;
+}
 
 int	ft_counterwords(const char *s, char c)
 {
@@ -23,7 +35,12 @@ int	ft_counterwords(const char *s, char c)
 	{
 		while (s[i] == c)
 			i++;
-		if (is_op(s[i]))
+		if (s[i] == '\'' || s[i] == '"')
+		{
+			words++;
+			skip_quoted_section(s, &i);
+		}
+		else if (s[i] == '>' || s[i] == '<' || s[i] == '|')
 		{
 			words++;
 			if ((s[i] == '>' || s[i] == '<') && s[i] == s[i + 1])
@@ -31,10 +48,11 @@ int	ft_counterwords(const char *s, char c)
 			else
 				i++;
 		}
-		else
+		else if (s[i])
 		{
 			words++;
-			while (s[i] && s[i] != c && !is_op(s[i]))
+			while (s[i] && s[i] != c && s[i] != '>' && s[i] != '<'
+				&& s[i] != '|' && s[i] != '\'' && s[i] != '"')
 				i++;
 		}
 	}
@@ -87,14 +105,22 @@ int	ft_is_all_space(char *input, t_data *data)
 
 int	ft_count_pipes(t_data *data)
 {
-	int	i;
-	int	pipes;
+	int		i;
+	int		pipes;
+	int		in_quote;
+	int		in_dquote;
 
 	i = 0;
 	pipes = 0;
+	in_quote = 0;
+	in_dquote = 0;
 	while (data->input[i])
 	{
-		if (data->input[i] == '|')
+		if (data->input[i] == '\'' && !in_dquote)
+			in_quote = !in_quote;
+		else if (data->input[i] == '"' && !in_quote)
+			in_dquote = !in_dquote;
+		else if (data->input[i] == '|' && !in_quote && !in_dquote)
 			pipes++;
 		i++;
 	}
