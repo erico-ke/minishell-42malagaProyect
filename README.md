@@ -84,5 +84,4 @@ Este proyecto es de carácter educativo como parte del programa 42. No está des
 
 ---
 
-¿Quieres que te genere también el `Makefile` básico para el proyecto o prefieres que te ayude con algún otro archivo como `.gitignore` o documentación del código?
 ```
